@@ -511,6 +511,8 @@ namespace Tool_Project
 
             GridTypeList.Controls.Add(node);
             node.Index = GridTypeList.Controls.IndexOf(node);
+
+            m_unsaved = true;
         }
 
         public void EditClass(Image image, string path, string name, bool traversable, int movementCost, int index)
@@ -533,6 +535,8 @@ namespace Tool_Project
                     }
                 }
             }
+
+            m_unsaved = true;
         }
 
         private XmlDocument CreateXml()
@@ -603,6 +607,7 @@ namespace Tool_Project
             }
             return doc;
         }
+
         private void LoadXml(XmlDocument doc)
         {
             XmlNode list = doc.FirstChild.FirstChild;
