@@ -1,0 +1,27 @@
+<Project>
+  <List>
+    <Item>
+      <Path>C:\Users\Public\Pictures\Sample Pictures\Desert.jpg</Path>
+      <ClassName>2</ClassName>
+      <Traversable>True</Traversable>
+      <MovementCost>0</MovementCost>
+    </Item>
+  </List>
+  <Grid>
+    <GridNode>
+      <Index>0</Index>
+      <X>17</X>
+      <Y>0</Y>
+    </GridNode>
+    <GridNode>
+      <Index>0</Index>
+      <X>18</X>
+      <Y>0</Y>
+    </GridNode>
+    <GridNode>
+      <Index>0</Index>
+      <X>19</X>
+      <Y>0</Y>
+    </GridNode>
+  </Grid>
+</Project>
