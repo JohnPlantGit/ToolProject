@@ -12,6 +12,7 @@ using System.IO;
 
 namespace Tool_Project
 {
+    // The form that handles editting the map
     public partial class MapEditor : Form
     {
         const int m_gridAmount = 20;
@@ -57,6 +58,14 @@ namespace Tool_Project
             this.Controls.Add(creator);
         }
 
+        // -------------
+        // Checks the files in DragEventArgs' paths for their extension
+        // Params:
+        //      out:Filename will return the path of the file
+        //      out:ext will return the extension of the file
+        //      e The event args from the drag and drop
+        // Return if the file has a valid extension
+        // -------------
         private bool ValidateFile(out string filename, out string ext, DragEventArgs e)
         {
             bool valid = false;
@@ -65,8 +74,6 @@ namespace Tool_Project
 
             filename = string.Empty;
             ext = String.Empty;
-
-            string temp = System.IO.Directory.GetCurrentDirectory();
 
             if (data != null)
             {
@@ -90,6 +97,11 @@ namespace Tool_Project
             return valid;
         }
 
+        // -------------
+        // Is run when a class in the list is clicked
+        // Copies the values of the class onto the creator
+        // and set's up the creator
+        // -------------
         private void GridImageList_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -109,6 +121,35 @@ namespace Tool_Project
             }
         }
 
+        // -------------
+        // Occurs when the mouse button is let go after selecting a class in the list
+        // Copies the values of the creator onto the current tile on the map that the mouse is over
+        // -------------
+        private void Create(object sender, MouseEventArgs e)
+        {
+            creator.Visible = false;
+
+            for (int x = 0; x < m_gridAmount; x++)
+            {
+                for (int y = 0; y < m_gridAmount; y++)
+                {
+                    if (m_grid[x, y].ClientRectangle.Contains(m_grid[x, y].PointToClient(Cursor.Position)))
+                    {
+                        m_grid[x, y].Copy(creator);
+
+                        m_unsaved = true;
+                        return;
+                    }
+                }
+            }
+
+        }
+
+        // -------------
+        // Occurs when the save tool strip is clicked
+        // Creates an xml of the map and the classes
+        // Lets the user choose the save location and name with the Save file dialog only if the map has not previously been saved
+        // -------------
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             XmlDocument doc = CreateXml();
@@ -137,6 +178,11 @@ namespace Tool_Project
             m_unsaved = false;
         }
 
+        // -------------
+        // Occurs when the open tool strip is clicked
+        // Allows the user to choose an xml to load
+        // Warns the user if there is unsaved work
+        // -------------
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -198,6 +244,10 @@ namespace Tool_Project
             }
         }
 
+        // -------------
+        // Occurs if a file has been dragged onto the form
+        // Validates the file
+        // -------------
         private void MapEditor_DragEnter(object sender, DragEventArgs e)
         {
             string filename;
@@ -210,6 +260,10 @@ namespace Tool_Project
             }
         }
 
+        // -------------
+        // Occurs when a file is dropped onto the form
+        // Will load the xml file
+        // -------------
         private void MapEditor_DragDrop(object sender, DragEventArgs e)
         {
             XmlDocument doc = new XmlDocument();
@@ -231,6 +285,9 @@ namespace Tool_Project
             m_unsaved = false;
         }
 
+        // -------------
+        // Responsible for moving the creator after the mouse
+        // -------------
         private void Update_Tick(object sender, EventArgs e)
         {
 
@@ -244,26 +301,9 @@ namespace Tool_Project
             }
         }
 
-        private void Create(object sender, MouseEventArgs e)
-        {
-            creator.Visible = false;
-
-            for (int x = 0; x < m_gridAmount; x++)
-            {
-                for (int y = 0; y < m_gridAmount; y++)
-                {
-                    if (m_grid[x, y].ClientRectangle.Contains(m_grid[x, y].PointToClient(Cursor.Position)))
-                    {
-                        m_grid[x, y].Copy(creator);
-
-                        m_unsaved = true;
-                        return;
-                    }
-                }
-            }
-
-        }
-
+        // -------------
+        // Clears all the values in the form
+        // -------------
         private void Clear()
         {
             for (int x = 0; x < m_gridAmount; x++)
@@ -277,6 +317,11 @@ namespace Tool_Project
             GridTypeList.Controls.Clear();
         }
 
+        // -------------
+        // Occurs when the new tool strip is clicked
+        // Clears the form
+        // Warns the user if there is unsaved work
+        // -------------
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (m_unsaved)
@@ -379,12 +424,20 @@ namespace Tool_Project
             
         }
 
+        // -------------
+        // Occurs when a map tile is clicked
+        // Removes the data in the map tile
+        // -------------
         private void GridNode_Click(object sender, EventArgs e)
         {
             ((GridNode)sender).Clear();
             m_unsaved = true;
         }
 
+        // -------------
+        // Occurs when the save tool strip is clicked
+        // allows the user to pick a location to save the map
+        // -------------
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -403,9 +456,13 @@ namespace Tool_Project
                 doc.Save(fs);
                 fs.Close();
                 m_unsaved = false;
+                m_saveFile = saveFileDialog.FileName;
             }
         }
 
+        // -------------
+        // Allows the user to save unsaved work before closing
+        // -------------
         private void MapEditor_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (m_unsaved)
@@ -497,11 +554,24 @@ namespace Tool_Project
             }
         }
 
+        // -------------
+        // Occurs when the new class button is clicked
+        // opens the Class editor form
+        // -------------
         private void newClass_Click(object sender, EventArgs e)
         {
             m_classEditor.Visible = true;
         }
 
+        // -------------
+        // Creates a new class type in the list
+        // Params:
+        //      Image the class's display picture
+        //      Path: the path to the image
+        //      Name: the name of the class
+        //      Traversable: if the class can be traversed
+        //      MovementCost: the cost of moving over the class
+        // -------------
         public void CreateNewClass(Image image, string path, string name, bool traversable, int movementCost)
         {
             GridNode node = new GridNode(image, path, name, traversable, movementCost, m_listSize);
@@ -515,6 +585,12 @@ namespace Tool_Project
             m_unsaved = true;
         }
 
+        // -------------
+        // Edits an existing class
+        // Params:
+        //      Same as CreateNewClass
+        //      Index: the index of the class being edited
+        // -------------
         public void EditClass(Image image, string path, string name, bool traversable, int movementCost, int index)
         {
             GridNode current = ((GridNode)GridTypeList.Controls[index]);
@@ -539,6 +615,9 @@ namespace Tool_Project
             m_unsaved = true;
         }
 
+        // -------------
+        // Creates an xml using the data in the form
+        // -------------
         private XmlDocument CreateXml()
         {
             XmlDocument doc = new XmlDocument();
@@ -608,6 +687,9 @@ namespace Tool_Project
             return doc;
         }
 
+        // -------------
+        // Load data from an xml into the form
+        // -------------
         private void LoadXml(XmlDocument doc)
         {
             XmlNode list = doc.FirstChild.FirstChild;
@@ -650,6 +732,10 @@ namespace Tool_Project
             }
         }
 
+        // -------------
+        // Occurs when edit is picked in a list item's context menu
+        // Opens the class editor and copies the values of the clicked item into it
+        // -------------
         private void GridListEdit_Click(object sender, EventArgs e)
         {
             m_classEditor.Visible = true;
@@ -657,6 +743,12 @@ namespace Tool_Project
             m_classEditor.EditClass(owner);
         }
 
+        // -------------
+        // Occurs when delete is picked in a list item's context menu
+        // Deletes the selected item from the list
+        // Removes all references to the item from the map
+        // Updates the index of the rest of the items
+        // -------------
         private void GridListDelete_Click(object sender, EventArgs e)
         {
             GridNode owner = ((GridNode)((ContextMenuStrip)((ToolStripMenuItem)sender).Owner).SourceControl);
